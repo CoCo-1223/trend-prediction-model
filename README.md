@@ -1,1 +1,1 @@
-# trend-prediction-model-
+# 빅데이터이해와 분석 4조
