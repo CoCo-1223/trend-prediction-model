@@ -526,7 +526,7 @@ def main():
     
     # 1. 데이터 로딩
     print("1️⃣ 데이터 로딩 중...")
-    base_path = r"C:\Users\jmzxc\OneDrive\바탕 화면\빅카인즈\data\processed"
+    base_path = "/Users/jm/Desktop/충북대학교/충대 4학년 1학기/2. 빅데이터이해와분석/팀프로젝트/trend-prediction-model/data/processed"
     
     loader = SamsungDataLoader(base_path)
     raw_data = loader.load_all_years()
