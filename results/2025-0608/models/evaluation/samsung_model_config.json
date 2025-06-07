@@ -1,0 +1,11 @@
+{
+  "model_type": "AdvancedSamsungLSTM",
+  "input_size": 60,
+  "hidden_size": 128,
+  "num_layers": 3,
+  "dropout": 0.3,
+  "attention_heads": 8,
+  "training_epochs": 23,
+  "best_val_loss": 0.011332436154286066,
+  "timestamp": "2025-06-08 03:26:48"
+}
