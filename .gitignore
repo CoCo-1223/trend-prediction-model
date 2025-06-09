@@ -1,0 +1,75 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Data files (large files)
+data/processed/
+*.csv
+*.xlsx
+*.xls
+
+# Model files
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+*.model
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyTorch
+*.pth
+*.pt
+
+# TensorFlow
+*.ckpt
+
+# Large processed data files
+data/processed/all_news_processed.csv
+data/processed/*.csv
+
+# Visualization outputs (if too large)
+data/visualizations/*.png
+data/visualizations/*.jpg
+data/visualizations/*.pdf 
