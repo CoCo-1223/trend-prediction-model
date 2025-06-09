@@ -1,0 +1,16 @@
+{
+  "analysis_date": "2025-06-08 03:38:28",
+  "total_products_analyzed": 26,
+  "significant_events": 18,
+  "average_sentiment_impact": -0.02747554722777858,
+  "average_stock_impact": -1.600753355708951,
+  "optimal_lag_days": -3,
+  "max_correlation": 0.6662518848541692,
+  "category_breakdown": {
+    "Galaxy S Series": 11,
+    "Galaxy Z Series": 8,
+    "Galaxy Watch": 4,
+    "Galaxy A Series": 2,
+    "Galaxy Book": 1
+  }
+}
