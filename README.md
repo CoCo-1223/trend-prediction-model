@@ -15,90 +15,38 @@
 
 ```
 news-sentiment-stock-predictor/
-├── 📊 data/                    # 데이터 저장소
+├── 📊 data/                   # 데이터 저장소
 │   ├── raw/                   # 원시 뉴스 데이터
 │   ├── processed/             # 전처리된 데이터
 │   ├── sentiment/             # 감성 분석 데이터
 │   ├── stock/                 # 주가 데이터
 │   ├── visualizations/        # 시각화 결과물
-│   └── products/              # 최종 결과물
+│   └── products/              # 제품 출시 데이터
 ├── 🔧 src/                    # 소스 코드
 │   ├── preprocessing.py       # 데이터 전처리
 │   ├── sentiment_finbert.py   # KR-FinBERT 감성 분석
 │   ├── stock.py               # 주가 데이터 처리
-│   └── visualize.py           # 시각화 도구
-├── 📝 py코드/                  # 개발 과정 코드
-│   ├── 분석대상선정.py           # 분석 대상 기업 선정
-│   ├── API접근성평가.py         # API 접근성 평가
-│   ├── 개발 환경 구축 코드.py     # 환경 설정
-│   ├── MongDB 구축.py         # 데이터베이스 구축
-│   ├── 텍스트전처리.py          # 뉴스 텍스트 전처리
-│   ├── 토큰화 및 형태소 분석 코드.py # 자연어 처리
-│   ├── 감성분석데이터셋구축.py   # 감성 분석 데이터셋
-│   └── BERT기반 감성분석.py    # KR-FinBERT 모델 구현
+│   └── visualize.py           # 주가+제품출시+감성 시각화
+├── 📝 code/                   # 개발 과정 코드 정리
+│   ├── 0.LSTM.py              # 기본 LSTM 모델
+│   ├── 1.데이터전처리.py         # 데이터 전처리
+│   ├── 2.감성분석.py            # KR-FinBERT 감성 분석
+│   ├── 3.감정분석후LSTM.py       # 감성 분석 + LSTM 결합
+│   ├── 4.font_test.py         # 폰트 테스트
+│   ├── 5.삼성LSTM.py           # 삼성전자 LSTM 모델
+│   ├── 6.데이터구조확인.py        # 데이터 구조 확인
+│   ├── 7.제품출시일정리.py        # 제품 출시 일정 분석
+│   ├── 8.7일평균통합시각화.py      # 7일 평균 통합 시각화
+│   ├── 9.7일평균LSTM데이터전처리.py # LSTM 데이터 전처리
+│   ├── 10.개선된삼성LSTM.py      # 개선된 삼성전자 LSTM
+│   ├── 11.제품출시임팩트분석.py    # 제품 출시 임팩트 분석
+│   └── 12.최종결과통합분석.py     # 최종 결과 통합 분석
 ├── 📈 results/                # 분석 결과
-├── 🏢 product/                # 최종 제품
 ├── 📋 requirements.txt        # 의존성 패키지
 ├── 🧠 best_samsung_lstm_model.pth # 훈련된 LSTM 모델
 └── 📄 README.md              # 프로젝트 문서
 ```
 
-## 🚀 설치 및 실행
-
-### 1. 환경 설정
-
-```bash
-# 저장소 클론
-git clone [repository-url]
-cd news-sentiment-stock-predictor
-
-# 가상환경 생성 (권장)
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 의존성 설치
-pip install -r requirements.txt
-```
-
-### 2. 추가 의존성 설치
-
-```bash
-# 딥러닝 프레임워크
-pip install torch torchvision torchaudio
-pip install transformers
-
-# 데이터 처리
-pip install pandas numpy scikit-learn
-
-# 시각화
-pip install matplotlib seaborn plotly
-
-# 자연어 처리
-pip install konlpy
-
-# 데이터베이스
-pip install pymongo
-
-# 유틸리티
-pip install tqdm python-dotenv
-```
-
-### 3. 실행 방법
-
-```bash
-# 1. 데이터 전처리
-python py코드/텍스트전처리.py
-
-# 2. 감성 분석
-python py코드/BERT기반 감성분석.py
-
-# 3. 주가 예측
-python samsungwhole.py
-python applewhole.py
-
-# 4. 시각화
-python src/visualize.py
-```
 
 ## 🔧 주요 모델
 
@@ -146,4 +94,5 @@ python src/visualize.py
 - |현종민| / |신예원| / |김채은|
 
 ---
+
 **참고**: 이 프로젝트는 학교 프로젝트를 위해 개발되었습니다.

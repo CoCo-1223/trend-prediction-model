@@ -8,7 +8,8 @@ Original file is located at
 """
 
 import pandas as pd
-import matplotlib.pyplot as pl
+import matplotlib.pyplot as plt
+from google.colab import files
 
 # 삼성전자 CSV 파일 경로 리스트
 samsung_file_paths = [
