@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뉴스 감성 분석 기반 주가 예측 모델 - 종합 대시보드</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.1;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .main-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .project-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Key Metrics Section */
+        .metrics-section {
+            background: white;
+            padding: 4rem 0;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #0f172a;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .metric-description {
+            font-size: 0.875rem;
+            color: #475569;
+            line-height: 1.4;
+        }
+
+        .metric-r2 .metric-value {
+            background: linear-gradient(45deg, #059669, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .metric-correlation .metric-value {
+            background: linear-gradient(45deg, #dc2626, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .metric-lag .metric-value {
+            background: linear-gradient(45deg, #7c3aed, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .metric-improvement .metric-value {
+            background: linear-gradient(45deg, #f59e0b, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            padding: 4rem 0;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #0f172a;
+            text-align: center;
+        }
+
+        /* Product Impact Section */
+        .product-section {
+            background: white;
+            padding: 4rem 0;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .product-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateX(4px);
+        }
+
+        .product-card.positive {
+            border-left-color: #10b981;
+        }
+
+        .product-card.negative {
+            border-left-color: #ef4444;
+        }
+
+        .product-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #0f172a;
+        }
+
+        .product-impact {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .impact-value {
+            font-weight: 600;
+        }
+
+        .impact-positive {
+            color: #059669;
+        }
+
+        .impact-negative {
+            color: #dc2626;
+        }
+
+        /* Business Value Section */
+        .business-section {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 4rem 0;
+        }
+
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .value-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .value-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #fbbf24;
+        }
+
+        .value-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .value-description {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        /* Implementation Timeline */
+        .timeline-section {
+            background: white;
+            padding: 4rem 0;
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #3b82f6;
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-content {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            width: 45%;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-left: 55%;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-right: 55%;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 50%;
+            top: 1rem;
+            width: 16px;
+            height: 16px;
+            background: #3b82f6;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            border: 4px solid white;
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+
+        .timeline-phase {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #0f172a;
+        }
+
+        .timeline-description {
+            font-size: 0.875rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
+        /* Footer */
+        .footer {
+            background: #0f172a;
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        .team-info {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-content {
+                width: calc(100% - 60px);
+                margin-left: 60px !important;
+                margin-right: 0 !important;
+            }
+
+            .timeline-marker {
+                left: 20px;
+            }
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .slide-up {
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.8s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="main-title" data-aos="fade-down">뉴스 감성 분석 기반 주가 예측 모델</h1>
+            <p class="subtitle" data-aos="fade-up" data-aos-delay="200">News Sentiment-Based Stock Prediction Model</p>
+            
+            <div class="project-info" data-aos="fade-up" data-aos-delay="400">
+                <div class="info-item">
+                    <strong>프로젝트 기간</strong><br>
+                    2025.03.17 ~ 2025.06.10
+                </div>
+                <div class="info-item">
+                    <strong>팀 구성</strong><br>
+                    현종민(팀장), 신예원, 김채은
+                </div>
+                <div class="info-item">
+                    <strong>수행 과목</strong><br>
+                    빅데이터 이해와 분석
+                </div>
+                <div class="info-item">
+                    <strong>데이터 규모</strong><br>
+                    50,833건 뉴스 기사
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Key Metrics Section -->
+    <section class="metrics-section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">🎯 핵심 성과 지표</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card metric-r2" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="metric-value">79.6%</div>
+                    <div class="metric-label">Model Accuracy (R²)</div>
+                    <div class="metric-description">
+                        R² = 0.796으로 투자 의사결정에 활용 가능한 높은 정확도 달성
+                    </div>
+                </div>
+                
+                <div class="metric-card metric-correlation" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="metric-value">0.666</div>
+                    <div class="metric-label">Correlation Strength</div>
+                    <div class="metric-description">
+                        주가-감성 간 강한 상관관계로 예측 신뢰성 확보
+                    </div>
+                </div>
+                
+                <div class="metric-card metric-lag" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="metric-value">-3일</div>
+                    <div class="metric-label">Optimal Time Lag</div>
+                    <div class="metric-description">
+                        주가가 감성을 3일 선행하는 핵심 패턴 발견
+                    </div>
+                </div>
+                
+                <div class="metric-card metric-improvement" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="metric-value">42x</div>
+                    <div class="metric-label">Performance Improvement</div>
+                    <div class="metric-description">
+                        초기 모델 대비 42배 성능 향상으로 실용성 확보
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chart Visualization Section -->
+    <section class="chart-section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">📊 모델 성능 분석</h2>
+            
+            <div class="chart-grid">
+                <div class="chart-container" data-aos="fade-right">
+                    <h3 class="chart-title">Model Performance Evolution</h3>
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="chart-container" data-aos="fade-left">
+                    <h3 class="chart-title">Time Lag Analysis</h3>
+                    <canvas id="lagChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container" data-aos="fade-up">
+                <h3 class="chart-title">Business Value Breakdown</h3>
+                <canvas id="valueChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Impact Section -->
+    <section class="product-section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">📱 제품별 임팩트 분석</h2>
+            
+            <div class="product-grid">
+                <div class="product-card positive" data-aos="fade-up" data-aos-delay="100">
+                    <div class="product-name">🥇 Galaxy S22 FE</div>
+                    <div class="product-impact">
+                        <span>감성 임팩트:</span>
+                        <span class="impact-value impact-positive">+0.295</span>
+                    </div>
+                    <div class="product-impact">
+                        <span>주가 변화:</span>
+                        <span class="impact-value impact-positive">+8.8%</span>
+                    </div>
+                    <small>가성비 포지셔닝으로 최고 성과 달성</small>
+                </div>
+                
+                <div class="product-card positive" data-aos="fade-up" data-aos-delay="200">
+                    <div class="product-name">🥈 Galaxy S23 Series</div>
+                    <div class="product-impact">
+                        <span>감성 임팩트:</span>
+                        <span class="impact-value impact-positive">+0.249</span>
+                    </div>
+                    <div class="product-impact">
+                        <span>주가 변화:</span>
+                        <span class="impact-value impact-positive">+2.2%</span>
+                    </div>
+                    <small>플래그십 라인업의 안정적 성과</small>
+                </div>
+                
+                <div class="product-card positive" data-aos="fade-up" data-aos-delay="300">
+                    <div class="product-name">🥉 Galaxy S23 FE</div>
+                    <div class="product-impact">
+                        <span>감성 임팩트:</span>
+                        <span class="impact-value impact-positive">+0.118</span>
+                    </div>
+                    <div class="product-impact">
+                        <span>주가 변화:</span>
+                        <span class="impact-value impact-negative">-2.7%</span>
+                    </div>
+                    <small>FE 라인업의 지속적 어필</small>
+                </div>
+                
+                <div class="product-card negative" data-aos="fade-up" data-aos-delay="400">
+                    <div class="product-name">📉 Galaxy S21 Series</div>
+                    <div class="product-impact">
+                        <span>감성 임팩트:</span>
+                        <span class="impact-value impact-negative">-0.399</span>
+                    </div>
+                    <div class="product-impact">
+                        <span>주가 변화:</span>
+                        <span class="impact-value impact-negative">-2.6%</span>
+                    </div>
+                    <small>초기 출시 시 시장 반응 아쉬움</small>
+                </div>
+                
+                <div class="product-card positive" data-aos="fade-up" data-aos-delay="500">
+                    <div class="product-name">⌚ Galaxy Watch Series</div>
+                    <div class="product-impact">
+                        <span>평균 감성:</span>
+                        <span class="impact-value">+0.021</span>
+                    </div>
+                    <div class="product-impact">
+                        <span>평균 주가:</span>
+                        <span class="impact-value impact-negative">-1.1%</span>
+                    </div>
+                    <small>웨어러블 시장에서 꾸준한 존재감</small>
+                </div>
+                
+                <div class="product-card positive" data-aos="fade-up" data-aos-delay="600">
+                    <div class="product-name">📱 Galaxy Z Series</div>
+                    <div class="product-impact">
+                        <span>평균 감성:</span>
+                        <span class="impact-value impact-negative">-0.011</span>
+                    </div>
+                    <div class="product-impact">
+                        <span>평균 주가:</span>
+                        <span class="impact-value impact-negative">-1.9%</span>
+                    </div>
+                    <small>폴더블 시장 개척 지속 노력</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Business Value Section -->
+    <section class="business-section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">💰 비즈니스 가치 평가</h2>
+            
+            <div class="value-grid">
+                <div class="value-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="value-title">💵 직접적 경제 효과</div>
+                    <div class="value-amount">₩1-2B</div>
+                    <div class="value-description">
+                        5년간 NPV 기준으로 투자 수익 개선, 마케팅 효율 향상, 리스크 손실 방지를 통한 총 경제적 가치
+                    </div>
+                </div>
+                
+                <div class="value-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="value-title">⚡ ROI 회수 기간</div>
+                    <div class="value-amount">3-6개월</div>
+                    <div class="value-description">
+                        개발 비용 ₩50-100M 대비 빠른 투자 회수로 즉시 적용 가능한 실용적 솔루션
+                    </div>
+                </div>
+                
+                <div class="value-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="value-title">📈 성과 개선</div>
+                    <div class="value-amount">15-30%</div>
+                    <div class="value-description">
+                        마케팅 ROI 20-30% 향상, 위기 대응 시간 50% 단축, 의사결정 속도 25-30% 개선
+                    </div>
+                </div>
+                
+                <div class="value-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="value-title">🎯 예측 신뢰도</div>
+                    <div class="value-amount">75%+</div>
+                    <div class="value-description">
+                        방향성 예측 정확도 60.9%, 전체 예측 정확도 79.6%로 실무 투자 의사결정 지원 가능
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Implementation Timeline -->
+    <section class="timeline-section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">🚀 구현 로드맵</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item" data-aos="fade-right">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-phase">Phase 3</div>
+                        <div class="timeline-title">고도화 분석 (3-6개월)</div>
+                        <div class="timeline-description">
+                            실시간 대시보드 개발, 예측 전략 엔진 구축, 시나리오 플래닝 및 What-if 분석 도구
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item" data-aos="fade-left">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-phase">Future</div>
+                        <div class="timeline-title">확장 및 상용화</div>
+                        <div class="timeline-description">
+                            타 기업군 적용, 글로벌 시장 확장, API 서비스 상용화, 금융 AI 플랫폼 구축
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Innovation Section -->
+    <section class="metrics-section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">🔬 기술적 혁신 사항</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="metric-value" style="color: #059669;">60개</div>
+                    <div class="metric-label">Feature Engineering</div>
+                    <div class="metric-description">
+                        기존 5개에서 60개 특성으로 확장하여 다차원 분석 구현
+                    </div>
+                </div>
+                
+                <div class="metric-card" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="metric-value" style="color: #dc2626;">3.0%</div>
+                    <div class="metric-label">MAPE (예측 오차)</div>
+                    <div class="metric-description">
+                        평균 절대 백분율 오차 3.0%로 업계 최고 수준 정확도
+                    </div>
+                </div>
+                
+                <div class="metric-card" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="metric-value" style="color: #7c3aed;">7일</div>
+                    <div class="metric-label">Moving Average</div>
+                    <div class="metric-description">
+                        일별 데이터의 노이즈 제거를 위한 7일 이동평균 최적화
+                    </div>
+                </div>
+                
+                <div class="metric-card" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="metric-value" style="color: #f59e0b;">LSTM</div>
+                    <div class="metric-label">Deep Learning</div>
+                    <div class="metric-description">
+                        양방향 LSTM + 멀티헤드 어텐션으로 시계열 패턴 학습
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Insights Section -->
+    <section class="chart-section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">💡 핵심 인사이트</h2>
+            
+            <div class="chart-grid">
+                <div class="chart-container" data-aos="fade-right">
+                    <h3 class="chart-title">감성 vs 주가 시차 분석</h3>
+                    <canvas id="insightChart1" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="chart-container" data-aos="fade-left">
+                    <h3 class="chart-title">제품 카테고리별 성과</h3>
+                    <canvas id="insightChart2" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 2rem;" data-aos="fade-up">
+                <h3 style="color: #0f172a; margin-bottom: 1.5rem; text-align: center;">🎯 비즈니스 액션 플랜</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                    <div style="background: #f0f9ff; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #0ea5e9;">
+                        <h4 style="color: #0c4a6e; margin-bottom: 0.5rem;">📊 투자 전략</h4>
+                        <p style="color: #0f172a; font-size: 0.875rem;">3일 선행 지표로 포트폴리오 리밸런싱, 위험 노출도 조정, 헤징 전략 활성화</p>
+                    </div>
+                    
+                    <div style="background: #f0fdf4; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #22c55e;">
+                        <h4 style="color: #14532d; margin-bottom: 0.5rem;">📢 마케팅 최적화</h4>
+                        <p style="color: #0f172a; font-size: 0.875rem;">Galaxy S시리즈 중심 캠페인, FE 라인업 강화, 제품 출시 타이밍 최적화</p>
+                    </div>
+                    
+                    <div style="background: #fefce8; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #eab308;">
+                        <h4 style="color: #713f12; margin-bottom: 0.5rem;">⚠️ 위기 관리</h4>
+                        <p style="color: #0f172a; font-size: 0.875rem;">실시간 감성 모니터링, 3일 조기 경보, 자동화된 대응 프로토콜 구축</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="team-info">
+                <div>팀장: 현종민</div>
+                <div>팀원: 신예원</div>
+                <div>팀원: 김채은</div>
+            </div>
+            <p>충북대학교 빅데이터 이해와 분석 • 2025년 6월</p>
+            <p style="margin-top: 0.5rem; font-size: 0.875rem; opacity: 0.7;">
+                "데이터로 예측하는 새로운 시대의 시작"
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize AOS (Animate On Scroll)
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Chart 1: Performance Evolution
+        const ctx1 = document.getElementById('performanceChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: ['1차 모델', '2차 개선', '3차 고도화'],
+                datasets: [{
+                    label: 'R² Score',
+                    data: [-0.19, 0.096, 0.7965],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'R² Score'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Time Lag Analysis
+        const ctx2 = document.getElementById('lagChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: ['-7일', '-5일', '-3일', '-1일', '0일', '+1일', '+3일', '+5일', '+7일'],
+                datasets: [{
+                    label: 'Correlation',
+                    data: [0.45, 0.55, 0.666, 0.58, 0.52, 0.48, 0.42, 0.38, 0.35],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: function(context) {
+                        return context.dataIndex === 2 ? '#dc2626' : '#ef4444';
+                    },
+                    pointRadius: function(context) {
+                        return context.dataIndex === 2 ? 8 : 4;
+                    }
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Correlation Coefficient'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time Lag (주가 기준)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 3: Business Value
+        const ctx3 = document.getElementById('valueChart').getContext('2d');
+        new Chart(ctx3, {
+            type: 'doughnut',
+            data: {
+                labels: ['투자 수익 개선', '마케팅 효율 향상', '리스크 손실 방지', '운영 효율성'],
+                datasets: [{
+                    data: [40, 30, 20, 10],
+                    backgroundColor: [
+                        '#10b981',
+                        '#3b82f6',
+                        '#f59e0b',
+                        '#8b5cf6'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Chart 4: Insight Chart 1 - Sentiment vs Stock Lead/Lag
+        const ctx4 = document.getElementById('insightChart1').getContext('2d');
+        new Chart(ctx4, {
+            type: 'bar',
+            data: {
+                labels: ['주가 선행', '동시 움직임', '감성 선행'],
+                datasets: [{
+                    label: '관찰 빈도',
+                    data: [65, 25, 10],
+                    backgroundColor: [
+                        '#ef4444',
+                        '#f59e0b',
+                        '#10b981'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '빈도 (%)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 5: Insight Chart 2 - Product Category Performance
+        const ctx5 = document.getElementById('insightChart2').getContext('2d');
+        new Chart(ctx5, {
+            type: 'radar',
+            data: {
+                labels: ['감성 임팩트', '주가 반응', '시장 관심도', '언론 보도량', '지속성'],
+                datasets: [{
+                    label: 'Galaxy S Series',
+                    data: [85, 80, 90, 85, 80],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2
+                }, {
+                    label: 'Galaxy Z Series',
+                    data: [60, 55, 70, 75, 65],
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // Add smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add loading animation
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '1';
+        });
+
+        // Counter animation for metrics
+        function animateCounters() {
+            const counters = document.querySelectorAll('.metric-value');
+            counters.forEach(counter => {
+                const target = counter.textContent;
+                const isPercentage = target.includes('%');
+                const isDecimal = target.includes('.');
+                const isNegative = target.includes('-');
+                const isMultiplier = target.includes('x');
+                
+                if (!isNaN(parseFloat(target))) {
+                    const targetValue = parseFloat(target);
+                    let current = 0;
+                    const increment = targetValue / 50;
+                    
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= targetValue) {
+                            current = targetValue;
+                            clearInterval(timer);
+                        }
+                        
+                        let displayValue = current.toFixed(isDecimal ? 3 : 0);
+                        if (isPercentage) displayValue += '%';
+                        if (isNegative && current > 0) displayValue = '-' + displayValue;
+                        if (isMultiplier) displayValue += 'x';
+                        
+                        counter.textContent = displayValue;
+                    }, 50);
+                }
+            });
+        }
+
+        // Trigger counter animation when metrics section is visible
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+
+        document.querySelectorAll('.metrics-section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-phase">Phase 1</div>
+                        <div class="timeline-title">즉시 실행 (1-2주)</div>
+                        <div class="timeline-description">
+                            실시간 모니터링 시스템 구축, 3일 조기 경보 시스템 배포, 위기 관리 프로토콜 설정
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item" data-aos="fade-left">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-phase">Phase 2</div>
+                        <div class="timeline-title">전략 통합 (1-2개월)</div>
+                        <div class="timeline-description">
+                            마케팅 전략 최적화, 투자 의사결정 프레임워크 구축, 부서별 대시보드 개발
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item" data-aos="fade-right">
